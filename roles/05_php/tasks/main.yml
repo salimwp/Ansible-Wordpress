@@ -1,0 +1,27 @@
+---
+
+- name: Enable Software Collection’s repository
+  yum:
+    name: centos-release-scl.noarch
+    state: latest
+
+- name: Installing PHP packages
+  yum:
+    name: ['rh-php70', 'rh-php70-php', 'rh-php70-php-fpm','rh-php70-php-mysqlnd']
+    state: latest
+
+- name: Copying fpm.conf to server
+  copy:
+    src: fpm.conf
+    dest: /etc/httpd/conf.d/fpm.conf
+
+- name: Starting php
+  systemd:
+    name: rh-php70-php-fpm
+    state: started
+    enabled: yes
+
+- name: Restarting apache server
+  systemd:
+    name: httpd
+    state: restarted

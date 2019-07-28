@@ -1,0 +1,13 @@
+---
+
+- name: Provisioning Wordpress server
+  hosts: wordpress
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  roles:
+    - 01_orchestration
+    - 02_common
+    - 03_apache
+    - 04_mysql
+    - 05_php

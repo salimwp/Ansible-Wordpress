@@ -1,0 +1,24 @@
+---
+
+- name: Installing apache
+  yum:
+    name: ['httpd', 'mod_ssl']
+    state: latest
+
+- name: Transferring httpd.conf
+  copy:
+    src: httpd.conf
+    dest: /etc/httpd/conf/httpd.conf
+
+- name: Enabling firewall port for https
+  firewalld:
+    service: https
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Starting apache server
+  systemd:
+    name: httpd
+    state: started
+    enabled: yes

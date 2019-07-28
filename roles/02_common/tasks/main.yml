@@ -1,0 +1,43 @@
+---
+
+- name: Setting hostname
+  hostname:
+    name: wordpress.local
+
+- name: Enable EPEL repo
+  yum:
+    name: 'epel-release'
+    state: latest
+
+- name: Update server
+  yum:
+    name: '*'
+    state: latest
+
+- name: Checking if reboot is needed
+  shell: |
+    NEW_KERNEL=`rpm -q kernel --queryformat '%{installtime} %{version}-%{release}.%{arch}\n' | sort -n -k1 | tail -1 | cut -d ' ' -f 2`
+    CURRENT_KERNEL=`uname -r`
+    if [ $NEW_KERNEL = $CURRENT_KERNEL ];
+    then
+      exit 0
+    else 
+      exit 1
+    fi
+  register: bootRequired
+  changed_when: bootRequired.rc != 0
+
+- name: Rebooting server
+  reboot:
+  when: bootRequired.rc != 0
+
+- name: Install NTP
+  yum:
+    name: ntp
+    state: latest
+
+- name: Starting up NTP
+  systemd:
+    name: ntpd
+    state: started
+    enabled: yes

@@ -1,0 +1,4 @@
+---
+
+- debug:
+    msg: 'Place holder for VM, Network and WAF orchestration'

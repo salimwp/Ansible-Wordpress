@@ -1,0 +1,59 @@
+---
+
+- name: Installing mariadb
+  yum:
+    name: ['mariadb-server','mariadb','MySQL-python']
+    state: latest
+
+- name: Configure SELinux to allow MariaDB to accept connection
+  seboolean:
+    name: mysql_connect_any
+    state: true
+    persistent: yes
+
+- name: Start MariaDB service
+  systemd:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Set Root password for localhost
+  mysql_user:
+    name: root 
+    host: "localhost" 
+    password: "{{ lookup('password','secrets/mysqlroot') }}" 
+    login_user: root 
+    login_password: "" 
+    state: present
+  ignore_errors: yes
+
+- name: Set Root password for other hosts
+  mysql_user: 
+    name: root 
+    host: "{{ item }}" 
+    password: "{{ lookup('password','secrets/mysqlroot') }}" 
+    login_user: root 
+    login_password: "{{ lookup('password','secrets/mysqlroot') }}" 
+    state: present
+  with_items:
+    - "localhost.localdomain"
+    - "127.0.0.1"
+    - "::1"
+
+- name: Remove anonymous user
+  mysql_user: 
+    name: '' 
+    host: "{{ item }}" 
+    login_user: root 
+    login_password: "{{ lookup('password','secrets/mysqlroot') }}" 
+    state: absent
+  with_items:
+    - "localhost"
+    - "localhost.localdomain"
+
+- name: Remove test database
+  mysql_db: 
+    name: test 
+    login_user: root 
+    login_password: "{{ lookup('password','secrets/mysqlroot') }}" 
+    state: absent
