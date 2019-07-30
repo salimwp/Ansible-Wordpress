@@ -1,0 +1,31 @@
+---
+
+- name: Downloading wordpress and unarchiving
+  unarchive:
+    src: https://wordpress.org/latest.tar.gz
+    dest: /usr/src/
+    remote_src: yes
+
+- name: Transferring wordpress files to webroot
+  shell: cp -r /usr/src/wordpress/* /var/www/html/
+
+- name: Creating MySQL wordpress DB
+  mysql_db: 
+    name: wordpress
+    login_user: root 
+    login_password: "{{ lookup('password','secrets/mysqlroot') }}" 
+    state: present
+
+- name: Create wordpress db user
+  mysql_user:
+    name: wpuser
+    password: "{{ lookup('password','secrets/wpuserpasswd') }}"
+    host: localhost
+    priv: "wordpress.*:ALTER,CREATE,SELECT,INSERT,UPDATE,DELETE"
+    login_user: root
+    login_password: "{{ lookup('password','secrets/mysqlroot') }}"
+
+- name: Transferring wp-config.php
+  template:
+    src: wp-config.php.j2
+    dest: /var/www/html/wp-config.php
