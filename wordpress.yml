@@ -1,7 +1,7 @@
 ---
 
 - name: Provisioning Wordpress server
-  hosts: wordpress
+  hosts: all
   become: yes
   become_method: sudo
   gather_facts: no

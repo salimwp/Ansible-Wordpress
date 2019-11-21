@@ -2,7 +2,7 @@
 
 - name: Setting hostname
   hostname:
-    name: wordpress.local
+    name: "{{ inventory_hostname }}"
 
 - name: Enable EPEL repo
   yum:
@@ -13,6 +13,17 @@
   yum:
     name: '*'
     state: latest
+
+- name: Installing firewall and python firewall  module
+  yum:
+    name: ['python-firewall','firewalld']
+    state: latest
+
+- name: Starting firewalld
+  systemd:
+    name: firewalld
+    state: started
+    enabled: yes
 
 - name: Checking if reboot is needed
   shell: |
@@ -26,6 +37,7 @@
     fi
   register: bootRequired
   changed_when: bootRequired.rc != 0
+  failed_when: bootRequired.rc >= 2
 
 - name: Rebooting server
   reboot:
